@@ -1,4 +1,4 @@
-type RouteHandler = (ctx: Context) => Promise<Response>;
+export type RouteHandler = (ctx: Context) => Promise<Response>;
 
 interface Route {
   path: string;
@@ -6,7 +6,7 @@ interface Route {
   handler: RouteHandler;
 }
 
-interface Context {
+export interface Context {
   request: Request;
   params: { [key: string]: string };
 }
@@ -40,25 +40,7 @@ export class Router {
     this.addRoute("DELETE", path, handler);
   }
 
-  public async handleRequest({request}: Deno.RequestEvent): Promise<Response> {
-    const method = request.method;
-    const url = new URL(request.url);
-    
-    const matchedRoute = this.findMatchingRoute(method, url.pathname);
-
-    if (matchedRoute) {
-      const context: Context = {
-        request,
-        params: this.extractParams(url.pathname, matchedRoute.path),
-      };
-
-      return await matchedRoute.handler(context);
-    }
-
-    return new Response("Not found", { status: 404 });
-  }
-
-  private findMatchingRoute(method: string, url: string): Route | undefined {
+  public findMatchingRoute(method: string, url: string): Route | undefined {
     return this.routes.find((route) => {
       const routePathSegments = route.path.split("/");
       const urlPathSegments = url.split("/");
@@ -84,7 +66,7 @@ export class Router {
     });
   }
 
-  private extractParams(url: string, routePath: string): { [key: string]: string } {
+  public extractParams(url: string, routePath: string): { [key: string]: string } {
     const params: { [key: string]: string } = {};
 
     const routePathSegments = routePath.split("/");
